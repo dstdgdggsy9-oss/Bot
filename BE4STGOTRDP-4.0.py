@@ -173,7 +173,7 @@ def only_sudo(func):
     async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
         uid = update.effective_user.id
         if uid not in SUDO_USERS:
-            return await update.message.reply_text("❌ YE SIRF V1RUU PAPA KAR SAKTE EY.")
+            return await update.message.reply_text("❌ 𝐘ᴏᴜʀ 𝐖ᴏʀᴅs 𝐀ʀᴇ 𝐔sᴇʟᴇss 𝐈 𝐎ɴʟʏ 𝐒ᴇʀᴠᴇ 𝐌ᴏɴᴀʀᴄʜ ^𝐁 ᴇ 𝐀 s 𝐓 ~ 💗...!!?")
         return await func(update, context)
     return wrapper
 
