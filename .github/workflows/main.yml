@@ -1,4 +1,4 @@
-name: ^𝐁 ᴇ 𝐀 s 𝐓 ~ 💗...!!? 4 bots
+name: ^𝐁 ᴇ 𝐀 s 𝐓 ~ 💗...!!? 6 bots
 
 on:
   workflow_dispatch:
@@ -22,4 +22,4 @@ jobs:
       - name: Run bot
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: python BE4STGOTRDP-4.0.py
+        run: python BE4STGOTRDP-3.py
