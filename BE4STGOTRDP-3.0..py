@@ -31,11 +31,10 @@ NCEMO_EMOJIS = ["😀","😃","😄","😁","😆","😅","😂","🤣","😭","
 ANI_EMOJIS = ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸"]
 FLAG_EMOJIS = ["🏁","🚩","🎌","🏴","🏳️","🇦🇫","🇦🇱","🇩🇿","🇦🇸","🇦🇩","🇦🇴","🇦🇮"]
 
-# GLOBAL STATE
 group_tasks = {}
 spam_tasks = {}
 apps, bots = [], []
-GLOBAL_DELAY = 0.05  # ULTRA FAST DELAY
+GLOBAL_DELAY = 0.05 
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -47,42 +46,43 @@ def only_sudo(func):
     return wrapper
 
 # ---------------------------
-# CORE LOOPS (ULTRA SPEED)
+# CORE LOOPS
 # ---------------------------
 async def nc_loop(bot, chat_id, base, mode):
     i = 0
     while True:
         try:
-            # Mode Logic Fixed
             if mode == "raidnc": text = f"{base} {RAID_TEXTS[i % len(RAID_TEXTS)]}"
             elif mode == "ncemo": text = f"{NCEMO_EMOJIS[i % len(NCEMO_EMOJIS)]} {base}"
             elif mode in ["ultragc", "ncbaap", "betanc"]: text = f"🚀 {base} 🚀 {random.choice(NCEMO_EMOJIS)}"
             else: text = f"🔥 {base} 🔥"
             
-            # Non-awaited task for extreme speed
             asyncio.create_task(bot.set_chat_title(chat_id=chat_id, title=text))
             i += 1
             await asyncio.sleep(GLOBAL_DELAY)
-        except telegram.error.RetryAfter as e:
-            await asyncio.sleep(e.retry_after)
-        except Exception:
-            await asyncio.sleep(0.5)
+        except telegram.error.RetryAfter as e: await asyncio.sleep(e.retry_after)
+        except Exception: await asyncio.sleep(0.5)
 
 async def spam_loop(bot, chat_id, text):
     while True:
         try:
-            # Increased Burst to 5 for GitHub Power
             tasks = [bot.send_message(chat_id=chat_id, text=text, disable_web_page_preview=True) for _ in range(5)]
             await asyncio.gather(*tasks, return_exceptions=True)
             await asyncio.sleep(GLOBAL_DELAY)
-        except telegram.error.RetryAfter as e:
-            await asyncio.sleep(e.retry_after)
-        except Exception:
-            break
+        except telegram.error.RetryAfter as e: await asyncio.sleep(e.retry_after)
+        except Exception: break
 
 # ---------------------------
 # HANDLERS
 # ---------------------------
+@only_sudo
+async def ping_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    start_time = time.time()
+    msg = await update.message.reply_text("🚀 Pinging...")
+    end_time = time.time()
+    ms = round((end_time - start_time) * 1000, 2)
+    await msg.edit_text(f"🚀 **𝐏𝐎𝐍𝐆!**\n🛰 **Latency:** `{ms}ms`\n🤖 **Bots Active:** `{len(bots)}`")
+
 @only_sudo
 async def start_nc_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cmd = update.message.text.split()[0][1:] 
@@ -110,15 +110,15 @@ async def stop_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("⏹ ALL KILLED.")
 
 # ---------------------------
-# SYSTEM BOOT (GitHub Optimized)
+# SYSTEM BOOT
 # ---------------------------
 def build_app(token):
-    # Higher connection pool for GitHub runners
     t_request = HTTPXRequest(connection_pool_size=100, read_timeout=1, write_timeout=1)
     app = Application.builder().token(token).request(t_request).defaults(Defaults(block=False)).build()
     
     all_cmds = ["gcnc", "ncemo", "nctime", "raidnc", "ncemoani", "ncemoflag", "ncbaap", "betanc", "ultragc"]
     for c in all_cmds: app.add_handler(PrefixHandler("-", c, start_nc_task))
+    app.add_handler(PrefixHandler("-", "ping", ping_handler))
     app.add_handler(PrefixHandler("-", "spam", spam_handler))
     app.add_handler(PrefixHandler("-", "unspam", stop_all))
     app.add_handler(PrefixHandler("-", "stopall", stop_all))
@@ -137,14 +137,6 @@ async def run_all_bots():
         except Exception: pass
     
     print("👑 ^𝐁 ᴇ 𝐀 s 𝐓 ~ ULTRA ENGINE RUNNING")
-    await asyncio.Event().wait()
-
-if __name__ == "__main__":
-    # Faster event loop handling for GitHub
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(run_all_bots())
-    except (KeyboardInterrupt, SystemExit):
-        pass
+    while True: await asyncio
         
+
