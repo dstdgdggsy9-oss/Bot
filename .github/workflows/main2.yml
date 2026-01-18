@@ -22,5 +22,5 @@ jobs:
       - name: Run bot
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: python BE4STGOTNEW-1.py
+        run: python BE4STGOTRDP-3.0..py
         
