@@ -35,12 +35,14 @@ else: SUDO_USERS = {OWNER_ID}
 # ---------------------------
 RAID_TEXTS = ["×~🌷GAY🌷×~","~×🌼BITCH🌼×~","~×🌻LESBIAN🌻×~","~×🌺CHAPRI🌺×~","~×🌹TMKC🌹×~","~×🏵️TMR🏵×~️","~×🪷TMKB🪷×~","~×💮CHUS💮×~","~×🌸HAKLE🌸×~","~×🌷GAREEB🌷×~","~×🌼RANDY🌼×~","~×🌻POOR🌻×~","~×🌺TATTI🌺×~","~×🌹CHOR🌹×~","~×🏵️CHAMAR🏵️×~","~×🪷SPERM COLLECTOR🪷×~","~×💮CHUTI LULLI💮×~","~×🌸KALWA🌸×~","~×🌷CHUD🌷×~","~×🌼CHUTKHOR🌼×~"]
 NCEMO_EMOJIS = ["😀","😃","😄","😁","😆","😅","😂","🤣","😭","😉","😗","😘","🥰","😍"]
+ANI_EMOJIS = ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸"]
+FLAG_EMOJIS = ["🏁","🚩","🎌","🏴","🏳️","🇦🇫","🇦🇱","🇩🇿","🇦🇸","🇦🇩","🇦🇴","🇦🇮"]
 
 # GLOBAL STATE
 group_tasks = {}
 spam_tasks = {}
 apps, bots = [], []
-GLOBAL_DELAY = 0.05  # ULTRA LOW DELAY FOR BURST
+GLOBAL_DELAY = 0.05 
 
 logging.basicConfig(level=logging.CRITICAL)
 
@@ -57,17 +59,19 @@ def only_sudo(func):
     return wrapper
 
 # ---------------------------
-# CORE LOOPS (ULTRA SPEED OPTIMIZED)
+# CORE LOOPS (FIXED LOGIC)
 # ---------------------------
 async def nc_loop(bot, chat_id, base, mode):
     i = 0
     while True:
         try:
-            # Mode selection logic
             if mode == "raidnc": text = f"{base} {RAID_TEXTS[i % len(RAID_TEXTS)]}"
+            elif mode == "ncemo": text = f"{NCEMO_EMOJIS[i % len(NCEMO_EMOJIS)]} {base}"
+            elif mode == "nctime": text = f"⌚ {time.strftime('%H:%M:%S')} | {base}"
+            elif mode == "ncemoani": text = f"{ANI_EMOJIS[i % len(ANI_EMOJIS)]} {base}"
+            elif mode == "ncemoflag": text = f"{FLAG_EMOJIS[i % len(FLAG_EMOJIS)]} {base}"
             else: text = f"🔥 {base} 🔥"
             
-            # Non-awaited title set for concurrency
             asyncio.create_task(bot.set_chat_title(chat_id=chat_id, title=text))
             i += 1
             await asyncio.sleep(GLOBAL_DELAY)
@@ -77,10 +81,8 @@ async def nc_loop(bot, chat_id, base, mode):
             await asyncio.sleep(0.5)
 
 async def spam_loop(bot, chat_id, text):
-    """Parallel Burst Spamming Engine"""
     while True:
         try:
-            # Fire 5 messages at once per bot per cycle
             tasks = [bot.send_message(chat_id=chat_id, text=text, disable_web_page_preview=True) for _ in range(5)]
             await asyncio.gather(*tasks, return_exceptions=True)
             await asyncio.sleep(GLOBAL_DELAY)
@@ -90,7 +92,7 @@ async def spam_loop(bot, chat_id, text):
             break
 
 # ---------------------------
-# HANDLERS
+# HANDLERS (FIXED COMMAND ROUTING)
 # ---------------------------
 @only_sudo
 async def start_nc_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -101,9 +103,9 @@ async def start_nc_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if chat_id in group_tasks:
         for t in group_tasks[chat_id]: t.cancel()
 
-    mode = "raidnc" if cmd == "raidnc" else "default"
-    group_tasks[chat_id] = [asyncio.create_task(nc_loop(b, chat_id, prefix, mode)) for b in bots]
-    await update.message.reply_text(f"🔥 UNBEATABLE {cmd.upper()} ACTIVE!")
+    # This ensures every command uses its specific data list
+    group_tasks[chat_id] = [asyncio.create_task(nc_loop(b, chat_id, prefix, cmd)) for b in bots]
+    await update.message.reply_text(f"🚀 {cmd.upper()} IS NOW RUNNING!")
 
 @only_sudo
 async def spam_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -122,22 +124,23 @@ async def stop_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("⏹ SHUTDOWN COMPLETE.")
 
 # ---------------------------
-# SYSTEM BOOT (Connection Pooling)
+# SYSTEM BOOT
 # ---------------------------
 def build_app(token):
-    # Use HTTPXRequest with pool_size for high-concurrency connections
     t_request = HTTPXRequest(connection_pool_size=100, read_timeout=1, write_timeout=1)
     app = Application.builder().token(token).request(t_request).defaults(Defaults(block=False)).build()
     
-    cmds = ["gcnc", "ncemo", "nctime", "raidnc", "ncemoani", "ncemoflag", "ncbaap", "betanc", "ultragc"]
-    for c in cmds: app.add_handler(PrefixHandler("-", c, start_nc_task))
+    # Registering ALL your commands explicitly
+    all_cmds = ["gcnc", "ncemo", "nctime", "raidnc", "ncemoani", "ncemoflag", "ncbaap", "betanc", "ultragc"]
+    for c in all_cmds:
+        app.add_handler(PrefixHandler("-", c, start_nc_task))
+        
     app.add_handler(PrefixHandler("-", "spam", spam_handler))
     app.add_handler(PrefixHandler("-", "unspam", stop_all))
     app.add_handler(PrefixHandler("-", "stopall", stop_all))
     return app
 
 async def run_all_bots():
-    print("💎 Initializing Ultra-Engine...")
     for token in list(set(TOKENS)):
         try:
             app = build_app(token.strip())
@@ -145,10 +148,9 @@ async def run_all_bots():
             await app.initialize(); await app.start()
             await app.updater.start_polling(drop_pending_updates=True)
         except Exception: pass
-    
-    print(f"👑 ^𝐁 ᴇ 𝐀 s 𝐓 ~ Unbeatable Multi is Online!")
+    print(f"👑 ^𝐁 ᴇ 𝐀 s 𝐓 ~ ALL COMMANDS ACTIVE!")
     await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(run_all_bots())
-    
+        
