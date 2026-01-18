@@ -21,20 +21,21 @@ TOKENS = [
 ]
 
 OWNER_ID = 8160881443
-SUDO_USERS = {OWNER_ID} # Faster than file I/O on GitHub
+SUDO_USERS = {OWNER_ID}
 
 # ---------------------------
 # DATA ASSETS
 # ---------------------------
-RAID_TEXTS = ["×~🌷GAY🌷×~","~×🌼BITCH🌼×~","~×🌻LESBIAN🌻×~","~×🌺CHAPRI🌺×~","~×🌹TMKC🌹×~","~×🏵️TMR🏵×~️","~×🪷TMKB🪷×~","~×💮CHUS💮×~","~×🌸HAKLE🌸×~","~×🌷GAREEB🌷×~","~×🌼RANDY🌼×~","~×🌻POOR🌻×~","~×🌺TATTI🌺×~","~×🌹CHOR🌹×~","~×🏵️CHAMAR🏵️×~","~×🪷SPERM COLLECTOR🪷×~","~×💮CHUTI LULLI💮×~","~×🌸KALWA🌸×~","~×🌷CHUD🌷×~","~×🌼CHUTKHOR🌼×~"]
+RAID_TEXTS = ["×~🌷GAY🌷×~","~×🌼BITCH🌼×~","~×🌻LESBIAN🌻×~","~×🌺CHAPRI🌺×~","~×🌹TMKC🌹×~","~×🏵️TMR🏵×~️","~×🪷TMKB🪷×~","~×💮CHUS💮×~","~×🌸HAKLE🌸×~","~×🌷GAREEB🌷×~"]
 NCEMO_EMOJIS = ["😀","😃","😄","😁","😆","😅","😂","🤣","😭","😉","😗","😘","🥰","😍"]
 ANI_EMOJIS = ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸"]
 FLAG_EMOJIS = ["🏁","🚩","🎌","🏴","🏳️","🇦🇫","🇦🇱","🇩🇿","🇦🇸","🇦🇩","🇦🇴","🇦🇮"]
 
+# GLOBAL STATE
 group_tasks = {}
 spam_tasks = {}
 apps, bots = [], []
-GLOBAL_DELAY = 0.05 
+GLOBAL_DELAY = 0.05  # ULTRA FAST DELAY
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -42,34 +43,46 @@ def only_sudo(func):
     async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if update.effective_user and update.effective_user.id in SUDO_USERS:
             return await func(update, context)
+        await update.message.reply_text("𝐘ᴏᴜʀ 𝐖ᴏʀᴅs 𝐀ʀᴇ 𝐖ᴏʀᴅʟᴇss")
     return wrapper
 
+# ---------------------------
+# CORE LOOPS (ULTRA SPEED)
+# ---------------------------
 async def nc_loop(bot, chat_id, base, mode):
     i = 0
     while True:
         try:
+            # Mode Logic Fixed
             if mode == "raidnc": text = f"{base} {RAID_TEXTS[i % len(RAID_TEXTS)]}"
             elif mode == "ncemo": text = f"{NCEMO_EMOJIS[i % len(NCEMO_EMOJIS)]} {base}"
-            elif mode == "nctime": text = f"⌚ {time.strftime('%H:%M:%S')} | {base}"
-            elif mode == "ncemoani": text = f"{ANI_EMOJIS[i % len(ANI_EMOJIS)]} {base}"
-            elif mode == "ncemoflag": text = f"{FLAG_EMOJIS[i % len(FLAG_EMOJIS)]} {base}"
+            elif mode in ["ultragc", "ncbaap", "betanc"]: text = f"🚀 {base} 🚀 {random.choice(NCEMO_EMOJIS)}"
             else: text = f"🔥 {base} 🔥"
             
+            # Non-awaited task for extreme speed
             asyncio.create_task(bot.set_chat_title(chat_id=chat_id, title=text))
             i += 1
             await asyncio.sleep(GLOBAL_DELAY)
-        except telegram.error.RetryAfter as e: await asyncio.sleep(e.retry_after)
-        except Exception: await asyncio.sleep(0.5)
+        except telegram.error.RetryAfter as e:
+            await asyncio.sleep(e.retry_after)
+        except Exception:
+            await asyncio.sleep(0.5)
 
 async def spam_loop(bot, chat_id, text):
     while True:
         try:
+            # Increased Burst to 5 for GitHub Power
             tasks = [bot.send_message(chat_id=chat_id, text=text, disable_web_page_preview=True) for _ in range(5)]
             await asyncio.gather(*tasks, return_exceptions=True)
             await asyncio.sleep(GLOBAL_DELAY)
-        except telegram.error.RetryAfter as e: await asyncio.sleep(e.retry_after)
-        except Exception: break
+        except telegram.error.RetryAfter as e:
+            await asyncio.sleep(e.retry_after)
+        except Exception:
+            break
 
+# ---------------------------
+# HANDLERS
+# ---------------------------
 @only_sudo
 async def start_nc_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cmd = update.message.text.split()[0][1:] 
@@ -78,14 +91,14 @@ async def start_nc_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if chat_id in group_tasks:
         for t in group_tasks[chat_id]: t.cancel()
     group_tasks[chat_id] = [asyncio.create_task(nc_loop(b, chat_id, prefix, cmd)) for b in bots]
-    await update.message.reply_text(f"🚀 {cmd.upper()} ON GITHUB RUNNER!")
+    await update.message.reply_text(f"⚡ {cmd.upper()} ACTIVATED!")
 
 @only_sudo
 async def spam_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args: return
     text, chat_id = " ".join(context.args), update.message.chat_id
     spam_tasks[chat_id] = [asyncio.create_task(spam_loop(b, chat_id, text)) for b in bots]
-    await update.message.reply_text("🌪 GITHUB BURST SPAM!")
+    await update.message.reply_text("🌪 ULTRA BURST SPAM ON!")
 
 @only_sudo
 async def stop_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -94,12 +107,16 @@ async def stop_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if cid in d:
             for t in d[cid]: t.cancel()
             del d[cid]
-    await update.message.reply_text("⏹ STOPPED.")
+    await update.message.reply_text("⏹ ALL KILLED.")
 
+# ---------------------------
+# SYSTEM BOOT (GitHub Optimized)
+# ---------------------------
 def build_app(token):
-    # Reduced pool size for GitHub environment stability
-    t_request = HTTPXRequest(connection_pool_size=20, read_timeout=5, write_timeout=5)
+    # Higher connection pool for GitHub runners
+    t_request = HTTPXRequest(connection_pool_size=100, read_timeout=1, write_timeout=1)
     app = Application.builder().token(token).request(t_request).defaults(Defaults(block=False)).build()
+    
     all_cmds = ["gcnc", "ncemo", "nctime", "raidnc", "ncemoani", "ncemoflag", "ncbaap", "betanc", "ultragc"]
     for c in all_cmds: app.add_handler(PrefixHandler("-", c, start_nc_task))
     app.add_handler(PrefixHandler("-", "spam", spam_handler))
@@ -108,27 +125,26 @@ def build_app(token):
     return app
 
 async def run_all_bots():
-    # Use Gather for bot initialization to avoid sequential delay
-    init_tasks = []
     for token in list(set(TOKENS)):
         token = token.strip()
         if not token: continue
-        app = build_app(token)
-        apps.append(app); bots.append(app.bot)
-        init_tasks.append(app.initialize())
-        init_tasks.append(app.start())
-        # Disable signal handlers as GitHub Actions doesn't allow standard signal management in child threads
-        init_tasks.append(app.updater.start_polling(drop_pending_updates=True, stop_signals=None))
+        try:
+            app = build_app(token)
+            apps.append(app); bots.append(app.bot)
+            await app.initialize()
+            await app.start()
+            await app.updater.start_polling(drop_pending_updates=True)
+        except Exception: pass
     
-    await asyncio.gather(*init_tasks)
-    print("👑 ^𝐁 ᴇ 𝐀 s 𝐓 ~ GITHUB MODE ONLINE")
-    while True: await asyncio.sleep(3600) # Prevents workflow exit
+    print("👑 ^𝐁 ᴇ 𝐀 s 𝐓 ~ ULTRA ENGINE RUNNING")
+    await asyncio.Event().wait()
 
 if __name__ == "__main__":
+    # Faster event loop handling for GitHub
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(run_all_bots())
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         pass
         
